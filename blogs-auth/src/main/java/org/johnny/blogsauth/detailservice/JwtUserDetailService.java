@@ -23,6 +23,7 @@ import java.util.List;
 @Service
 public class JwtUserDetailService implements UserDetailsService {
 
+    
     @Autowired
     private PasswordEncoder passwordEncoder;
 
