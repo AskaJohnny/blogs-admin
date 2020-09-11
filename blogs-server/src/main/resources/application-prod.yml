@@ -1,0 +1,61 @@
+server:
+  port: 9001
+  servlet:
+    context-path: /blogs-admin
+
+spring:
+  http:
+    log-request-details: true
+  application:
+    name: blogs-admin
+  datasource:
+    #url: jdbc:mysql://127.0.0.1:3306/blogs?useUnicode=true&zeroDateTimeBehavior=convertToNull&characterEncoding=UTF-8&characterSetResults=UTF-8&autoReconnect=true&useSSL=false
+    url: jdbc:mysql://47.98.250.186:3306/blogs?useUnicode=true&zeroDateTimeBehavior=convertToNull&characterEncoding=UTF-8&characterSetResults=UTF-8&autoReconnect=true&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: johnny
+    driver-class-name: com.mysql.jdbc.Driver
+
+  jpa:
+    database: mysql
+    show-sql: true
+    open-in-view: true
+    hibernate:
+      ddl-auto: update
+      naming:
+        strategy: org.hibernate.cfg.DefaultComponentSafeNamingStrategy
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+        format_sql: true
+  data:
+    elasticsearch:
+      cluster-nodes: 47.98.250.186:9300
+      repositories:
+        enabled: true
+      #cluster-name: docker-cluster
+      cluster-name: elasticsearch
+  mail:
+    host: smtp.qq.com
+    username: 626142589@qq.com
+    password: xmwiytyhuxbtbdeg
+    properties:
+      mail:
+        smtp:
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+  redis:
+    host: 47.98.250.186
+    port: 6380
+    password:
+    jedis:
+      pool:
+        max-active: 8
+        max-idle: 8
+        max-wait: -1ms
+        min-idle: 0
+
+system:
+  jwt:
+    jwtSubject: blogs-admin
+    jwtSigningKey: johnny
+    expirationHour: 2  #过期小时数
