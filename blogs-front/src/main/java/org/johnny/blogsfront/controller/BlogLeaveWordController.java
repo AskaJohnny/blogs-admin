@@ -39,6 +39,7 @@ public class BlogLeaveWordController {
     @GetMapping("/page")
     @CrossOrigin
     public ResultVo<Page<BlogLeaveWordVo>> page(PageVo pageVo , @RequestParam(value = "blogId" ,required = false) Long blogId) {
+        pageVo.setPageNumber(pageVo.getPageNumber() -1 );
         Page<BlogLeaveWordVo> page = blogLeaveWordService.findPage(PageUtil.initPage(pageVo), blogId);
         return ResultVoUtil.success(page);
     }

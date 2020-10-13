@@ -1,10 +1,13 @@
 package org.johnny.blogsserver;
 
+import org.johnny.blogscommon.service.BlogInfoEsService;
+import org.johnny.blogscommon.service.impl.BlogInfoEsServiceImpl;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -19,10 +22,13 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 
 @EnableJpaAuditing //开启自动更改时间等
-@ComponentScan("org.johnny.*")
+@ComponentScan(value = "org.johnny.*")
 @EntityScan(basePackages = {"org.johnny.*"})
 @EnableJpaRepositories(basePackages = {"org.johnny.*"})
-@EnableElasticsearchRepositories(basePackages = {"org.johnny.blogscommon.*"})
+//@EnableElasticsearchRepositories(basePackages = {"org.johnny.blogscommon.*"})
+/**
+ * 为了让 blogs-server项目 不依赖
+ */
 @EnableConfigurationProperties
 
 @EnableScheduling //开起定时任务

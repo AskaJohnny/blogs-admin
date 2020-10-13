@@ -65,7 +65,10 @@ public class BlogInfoServiceImpl implements BlogInfoService {
     @Autowired
     private BlogInfoRepository blogInfoRepository;
 
-    @Autowired
+    /**
+     * 为了让 blogs-server项目 不依赖
+     */
+    @Autowired(required = false)
     private BlogInfoEsEntityRepository blogInfoEsEntityRepository;
 
     @Autowired
@@ -239,16 +242,18 @@ public class BlogInfoServiceImpl implements BlogInfoService {
 
 
         if (!StringUtils.isEmpty(blogInfoForm.getIds()) && blogInfoForm.getIds().size() > 1) {
-            jpaQuery
-                    .offset(pageable.getPageNumber() * pageable.getPageSize())
-                    .limit(pageable.getPageSize());
+//            jpaQuery
+//                    .offset(pageable.getPageNumber() * pageable.getPageSize())
+//                    .limit(pageable.getPageSize());
 
             jpaQuery.where(qBlogInfo.id.in(blogInfoForm.getIds()));
         }
 
         if (!StringUtils.isEmpty(blogInfoForm.getIds()) && blogInfoForm.getIds().size() == 1) {
             jpaQuery.where(qBlogInfo.id.in(blogInfoForm.getIds()));
-
+            jpaQuery
+                    .offset(pageable.getPageNumber() * pageable.getPageSize())
+                    .limit(pageable.getPageSize());
             //表示是选择一个的
         } else {
             jpaQuery
@@ -269,16 +274,16 @@ public class BlogInfoServiceImpl implements BlogInfoService {
             blogInfo.setBlogImageUrl(tuple.get(2, String.class));
             blogInfo.setBlogShortContent(tuple.get(3, String.class));
             blogInfo.setCreateDate(tuple.get(4, Date.class));
-            blogInfo.setCreateUser(tuple.get(7,String.class));
-            blogInfo.setThumbCount(tuple.get(8,Long.class));
-            blogInfo.setUpdateTime(tuple.get(9,Date.class));
+            blogInfo.setCreateUser(tuple.get(7, String.class));
+            blogInfo.setThumbCount(tuple.get(8, Long.class));
+            blogInfo.setUpdateTime(tuple.get(9, Date.class));
 
             BlogInfoVo blogInfoVo = BlogInfoConverter.INSTANCE.domain2vo(blogInfo)
                     .setBlogTypeName(tuple.get(5, String.class))
                     .setBlogTypeAnchor(tuple.get(6, String.class));
 
-            if(blogInfo.getUpdateTime() != null){
-                blogInfoVo.setUpdateTime(DateUtils.formatDate(blogInfo.getUpdateTime(),"yyyy-MM-dd HH:mm:ss"));
+            if (blogInfo.getUpdateTime() != null) {
+                blogInfoVo.setUpdateTime(DateUtils.formatDate(blogInfo.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
             }
             blogInfoList.add(blogInfoVo);
 
@@ -324,36 +329,36 @@ public class BlogInfoServiceImpl implements BlogInfoService {
         blogInfoVo.setAnchors(list);
 
         //查询 上一条  下一条信息
-        fillPreviousNextBlogInfo(id,blogInfoVo);
+        fillPreviousNextBlogInfo(id, blogInfoVo);
 
         return blogInfoVo;
     }
 
     private void fillPreviousNextBlogInfo(Long id, BlogInfoVo blogInfoVo) {
         QBlogInfo qBlogInfo = QBlogInfo.blogInfo;
-        Tuple tuple =  queryFactory.select(qBlogInfo.id, qBlogInfo.blogTitle)
+        Tuple tuple = queryFactory.select(qBlogInfo.id, qBlogInfo.blogTitle)
                 .from(qBlogInfo)
                 .where(qBlogInfo.id.lt(id))
                 .orderBy(qBlogInfo.id.desc())
                 .limit(1).fetchOne();
 
-        if(tuple != null){
-            blogInfoVo.setPreviousBlogId(tuple.get(0,Long.class));
-            blogInfoVo.setPreviousBlogTitle(tuple.get(1,String.class));
-        }else{
+        if (tuple != null) {
+            blogInfoVo.setPreviousBlogId(tuple.get(0, Long.class));
+            blogInfoVo.setPreviousBlogTitle(tuple.get(1, String.class));
+        } else {
             blogInfoVo.setPreviousBlogId(0L);
         }
 
-        Tuple tuple2 =  queryFactory.select(qBlogInfo.id, qBlogInfo.blogTitle)
+        Tuple tuple2 = queryFactory.select(qBlogInfo.id, qBlogInfo.blogTitle)
                 .from(qBlogInfo)
                 .where(qBlogInfo.id.gt(id))
                 .orderBy(qBlogInfo.id.asc())
                 .limit(1).fetchOne();
 
-        if(tuple2 != null){
-            blogInfoVo.setNextBlogId(tuple2.get(0,Long.class));
-            blogInfoVo.setNextBlogTitle(tuple2.get(1,String.class));
-        }else{
+        if (tuple2 != null) {
+            blogInfoVo.setNextBlogId(tuple2.get(0, Long.class));
+            blogInfoVo.setNextBlogTitle(tuple2.get(1, String.class));
+        } else {
             blogInfoVo.setNextBlogId(0L);
         }
 
@@ -409,7 +414,6 @@ public class BlogInfoServiceImpl implements BlogInfoService {
         blogInfoRepository.save(blogInfo);
 
         saveToEs(blogInfo);
-
         refreshRedis();
     }
 
@@ -448,7 +452,7 @@ public class BlogInfoServiceImpl implements BlogInfoService {
     public void addClick(Long id) {
         BlogInfo blogInfo = blogInfoRepository.findById(id).orElse(null);
         synchronized (this) {
-            if(blogInfo != null){
+            if (blogInfo != null) {
                 blogInfo.setClickCount(blogInfo.getClickCount() + 1);
                 blogInfoRepository.save(blogInfo);
             }

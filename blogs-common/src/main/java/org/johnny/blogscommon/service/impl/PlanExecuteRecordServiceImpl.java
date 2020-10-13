@@ -110,7 +110,7 @@ public class PlanExecuteRecordServiceImpl implements PlanExecuteRecordService {
                         }
                 );
 
-                Map<String, PlanExecuteRecordChartVo.PlanTimeType> listMap = planTimeTypeList.stream().collect(Collectors.toMap(PlanExecuteRecordChartVo.PlanTimeType::getCode, planTimeType -> planTimeType));
+                Map<String, PlanExecuteRecordChartVo.PlanTimeType> listMap = planTimeTypeList.stream().filter(planTimeType -> !planTimeType.getName().equals("剩余天数")).collect(Collectors.toMap(PlanExecuteRecordChartVo.PlanTimeType::getCode, planTimeType -> planTimeType));
 
                 List<Tuple> tuples = queryFactory.select(QPlanExecuteRecord.planExecuteRecord.status, QPlanExecuteRecord.planExecuteRecord.status.count())
                         .from(QPlanExecuteRecord.planExecuteRecord)
@@ -122,7 +122,10 @@ public class PlanExecuteRecordServiceImpl implements PlanExecuteRecordService {
                         String status = tuple.get(0, String.class);
                         Long count = tuple.get(1, Long.class);
                         PlanExecuteRecordChartVo.PlanTimeType planTimeType = listMap.get(status);
-                        planTimeType.setValue(count);
+                        if(planTimeType != null){
+                            planTimeType.setValue(count);
+                        }
+
                     });
                 }
                 planExecuteRecordChartVo.setPlanTimeTypeList(planTimeTypeList);

@@ -11,6 +11,7 @@ import org.johnny.blogscommon.vo.blog.BlogInfoVo;
 import org.johnny.blogscommon.vo.blog.BlogTypeVo;
 import org.johnny.blogscommon.vo.common.ResultVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -35,12 +36,15 @@ public class BlogInfoController {
     private BlogInfoRepository blogInfoRepository;
 
 
-
     @Autowired
     private BlogInfoService blogInfoService;
 
     @Autowired
     private BlogTypeService blogTypeService;
+
+    @Value("${blog.frontUrl}")
+    private String blogFrontUrl;
+
 
 //    /**
 //     * 查询blogInfo信息
@@ -65,6 +69,7 @@ public class BlogInfoController {
     @PostMapping("/page")
     @CrossOrigin
     public ResultVo<Page<BlogInfoVo>> page(@RequestBody BlogInfoForm blogInfoForm) {
+        blogInfoForm.setPageNumber(blogInfoForm.getPageNumber() - 1);
         Page<BlogInfoVo> page = blogInfoService.findPage(PageUtil.initPage(blogInfoForm), blogInfoForm);
         return ResultVoUtil.success(page);
     }
@@ -83,25 +88,25 @@ public class BlogInfoController {
 //    }
 
 
-
     /**
      * 查询BlogTypeVo信息
+     *
      * @return : ResultVo
      */
     @GetMapping("/type")
     @CrossOrigin
-    public ResultVo<List<BlogTypeVo>> list(){
+    public ResultVo<List<BlogTypeVo>> list() {
         List<BlogTypeVo> list = blogTypeService.findList();
         return ResultVoUtil.success(list);
     }
 
 
-
     @CrossOrigin
     @PostMapping("/saveBlogInfo")
     public ResultVo saveBlogInfo(@RequestBody BlogInfoVo blogInfoVo) {
-        blogInfoService.addBlogInfo(blogInfoVo);
-        return  ResultVoUtil.success();
+        //blogInfoService.addBlogInfo(blogInfoVo);
+        restTemplate.postForObject(blogFrontUrl, blogInfoVo, String.class);
+        return ResultVoUtil.success();
     }
 
 //    /**
@@ -117,11 +122,12 @@ public class BlogInfoController {
 
     /**
      * 查询BlogTypeVo信息
+     *
      * @return : ResultVo
      */
     @GetMapping("/{id}")
     @CrossOrigin
-    public ResultVo getBlogInfoById(@PathVariable(name = "id") Long id){
+    public ResultVo getBlogInfoById(@PathVariable(name = "id") Long id) {
         BlogInfo blogInfo = blogInfoRepository.findById(id).orElse(null);
         return ResultVoUtil.success(blogInfo);
     }

@@ -22,10 +22,15 @@ import java.util.List;
 @Service
 public class BlogInfoEsServiceImpl implements BlogInfoEsService {
 
-
-    @Autowired
+    /**
+     * 为了让 blogs-server项目 不依赖
+     */
+    @Autowired(required = false)
     private BlogInfoEsEntityRepository blogInfoEsEntityRepository;
-    @Autowired
+    /**
+     * 为了让 blogs-server项目 不依赖
+     */
+    @Autowired(required = false)
     private ElasticsearchTemplate elasticsearchTemplate;
 
 

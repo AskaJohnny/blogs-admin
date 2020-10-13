@@ -2,6 +2,10 @@ server:
   port: 9001
   servlet:
     context-path: /blogs-admin
+  tomcat:
+    max-threads: 10
+
+
 
 spring:
   http:
@@ -27,13 +31,13 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL5InnoDBDialect
         format_sql: true
-  data:
-    elasticsearch:
-      cluster-nodes: 47.98.250.186:9300
-      repositories:
-        enabled: true
-      #cluster-name: docker-cluster
-      cluster-name: elasticsearch
+#  data:
+#    elasticsearch:
+#      cluster-nodes: 47.98.250.186:9300
+#      repositories:
+#        enabled: true
+#      #cluster-name: docker-cluster
+#      cluster-name: elasticsearch
   mail:
     host: smtp.qq.com
     username: 626142589@qq.com
@@ -59,3 +63,7 @@ system:
     jwtSubject: blogs-admin
     jwtSigningKey: johnny
     expirationHour: 2  #过期小时数
+
+
+blog:
+  frontUrl: http://localhost:8000/blogs/blogInfo/saveBlogInfo

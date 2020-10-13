@@ -139,7 +139,6 @@ public class BlogInfoController {
         return null;
     }
 
-
     @GetMapping("/refreshEs/{id}")
     public ResultVo refreshEs(@PathVariable Long id) {
         blogInfoService.refreshEs(id);

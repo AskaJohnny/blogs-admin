@@ -6,7 +6,7 @@ import org.johnny.blogscommon.vo.blog.BlogTypeVo;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2020-09-09T10:52:25+0800",
+    date = "2020-09-29T16:16:35+0800",
     comments = "version: 1.3.0.Final, compiler: javac, environment: Java 1.8.0_151 (Oracle Corporation)"
 )
 public class BlogTypeConverterImpl implements BlogTypeConverter {

@@ -4,6 +4,9 @@ server:
   port: 8000
   servlet:
     context-path: /blogs
+  tomcat:
+    max-threads: 10
+
 
 spring:
   http:
@@ -31,14 +34,14 @@ spring:
         format_sql: true
   data:
     elasticsearch:
-      cluster-nodes: 127.0.0.1:9300
+      cluster-nodes: 47.98.250.186:9300
       repositories:
         enabled: true
       #cluster-name: docker-cluster
       cluster-name: elasticsearch
 
   redis:
-    host: 127.0.0.1
+    host: 47.98.250.186
     port: 6380
     password:
     jedis:
