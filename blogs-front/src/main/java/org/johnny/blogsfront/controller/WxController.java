@@ -81,6 +81,34 @@ public class WxController {
         return resonseXml;
     }
 
+    @PostMapping("/authorize2")
+    public String autoResponse2(HttpServletRequest request) {
+        WxXmlData wxData;
+        String resonseXml = "success";
+        try {
+            ServletInputStream in = request.getInputStream();
+            int size = request.getContentLength();
+            if (size < 0) {
+                return null;
+            }
+            //解析inputstream中的数据到 WxXmlData
+            wxData = wxService.resolveXmlData(in);
+            System.out.println(wxData);
+//            if (wxData != null) {
+//                resonseXml = wxService.autoResponse(wxData);
+//                //发送email  新用户关注 通知 或者取消关注
+//                emailService.sendEmail(wxData);
+//
+//            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        log.info("【Response xmlData : {}】", resonseXml);
+
+        return resonseXml;
+    }
+
     @GetMapping("/testxml")
     public void testXml() {
 

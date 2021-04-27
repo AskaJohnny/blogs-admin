@@ -30,11 +30,12 @@ spring:
         format_sql: true
   data:
     elasticsearch:
-      cluster-nodes: 47.98.250.186:9300
+      cluster-nodes: 127.0.0.1:9300
       repositories:
         enabled: true
-      #cluster-name: docker-cluster
+      #cluster-name: docker-clusterblog
       cluster-name: elasticsearch
+
   redis:
     host: 47.98.250.186
     port: 6380
@@ -62,5 +63,9 @@ spring:
     default-encoding: UTF-8
 
 
-person:
-  first-name: jo
+
+qr:
+  qrExpireMinute: 5
+  qrWidth: 256
+  qrHeight: 256
+  qrSuffix: PNG

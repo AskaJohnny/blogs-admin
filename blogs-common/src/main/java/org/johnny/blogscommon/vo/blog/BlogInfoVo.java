@@ -85,6 +85,7 @@ public class BlogInfoVo {
 
     private Long nextBlogId;
 
+    private String isThumbed;
 
 
 }

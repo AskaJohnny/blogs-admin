@@ -3,7 +3,9 @@ package org.johnny.blogsfront.controller;
 import com.google.gson.Gson;
 
 import org.johnny.blogscommon.constants.RedisConstankey;
+import org.johnny.blogscommon.entity.thumb.UserThumbRelation;
 import org.johnny.blogscommon.form.BlogInfoForm;
+import org.johnny.blogscommon.repository.thumb.UserThumbRelationRepository;
 import org.johnny.blogscommon.service.BlogInfoEsService;
 import org.johnny.blogscommon.service.BlogInfoService;
 import org.johnny.blogscommon.utils.DateUtils;
@@ -35,14 +37,11 @@ public class BlogInfoController {
     private BlogInfoService blogInfoService;
 
 
-
-    @Autowired
-    private BlogInfoEsService blogInfoEsService;
-
-
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    @Autowired
+    private UserThumbRelationRepository userThumbRelationRepository;
 
     @RequestMapping("/queryCount")
     @CrossOrigin
@@ -113,8 +112,26 @@ public class BlogInfoController {
     public ResultVo<BlogInfoVo> queryById(@PathVariable("id") Long id) {
         BlogInfoVo blogInfoVo = blogInfoService.queryById(id);
         return ResultVoUtil.success(blogInfoVo);
-
     }
+
+    /**
+     * 查询blogInfo信息
+     *
+     * @return : ResultVo
+     */
+    @GetMapping("/{id}/{userId}")
+    @CrossOrigin
+    public ResultVo<BlogInfoVo> queryById(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
+        BlogInfoVo blogInfoVo = blogInfoService.queryById(id);
+        if (userId != null && userId != 0L) {
+            UserThumbRelation userThumbRelation = userThumbRelationRepository.findByUserIdAndBlogInfoId(userId, id);
+            if (userThumbRelation != null) {
+                blogInfoVo.setIsThumbed("1");
+            }
+        }
+        return ResultVoUtil.success(blogInfoVo);
+    }
+
 
     @GetMapping("/save")
     @CrossOrigin
@@ -123,12 +140,12 @@ public class BlogInfoController {
     }
 
 
-
-
     @CrossOrigin
     @GetMapping("/searchBlogEs")
     public ResultVo searchBlogEs(@RequestParam String blogTitle) {
-        return ResultVoUtil.success(blogInfoEsService.queryBlogFromEs(blogTitle));
+
+        //return ResultVoUtil.success(blogInfoEsService.queryBlogFromEs(blogTitle));
+        return ResultVoUtil.success(blogInfoService.queryBLogForSearch(blogTitle));
     }
 
 
@@ -165,24 +182,19 @@ public class BlogInfoController {
     }
 
 
-    @GetMapping("/addThumbClick/{id}")
+    @GetMapping("/addThumbClick/{id}/{userId}")
     @CrossOrigin
-    public ResultVo addThumbClick(@PathVariable Long id) {
-        blogInfoService.addThumbClick(id);
+    public ResultVo addThumbClick(@PathVariable Long id, @PathVariable Long userId) {
+        blogInfoService.addThumbClick(id, userId);
         return ResultVoUtil.success();
     }
 
-    @GetMapping("/clearThumbClick/{id}")
+    @GetMapping("/clearThumbClick/{id}/{userId}")
     @CrossOrigin
-    public ResultVo clearThumbClick(@PathVariable Long id) {
-        blogInfoService.clearThumbClick(id);
+    public ResultVo clearThumbClick(@PathVariable Long id, @PathVariable Long userId) {
+        blogInfoService.clearThumbClick(id, userId);
         return ResultVoUtil.success();
     }
-
-
-
-
-
 
 
 //    @GetMapping("/getAuthUrl")

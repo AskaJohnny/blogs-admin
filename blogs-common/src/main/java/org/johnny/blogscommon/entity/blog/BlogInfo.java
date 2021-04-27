@@ -20,7 +20,6 @@ import java.util.Date;
  **/
 @Data
 @Entity
-
 @EntityListeners(AuditingEntityListener.class)
 public class BlogInfo {
 
@@ -102,6 +101,10 @@ public class BlogInfo {
     @Column(columnDefinition = "text")
     private String anchorJson;
 
+    @Transient
+    private String blogTypeName;
 
+    @Transient
+    private String blogTypeAnchor;
 
 }

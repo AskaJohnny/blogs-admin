@@ -1,6 +1,7 @@
 package org.johnny.blogscommon.service;
 
 
+import org.johnny.blogscommon.entity.blog.BlogInfo;
 import org.johnny.blogscommon.entity.blog.BlogInfoEsEntity;
 
 import java.util.List;
@@ -19,4 +20,7 @@ public interface BlogInfoEsService {
     BlogInfoEsEntity update(BlogInfoEsEntity blogInfoEsEntity);
 
      List<BlogInfoEsEntity> queryBlogFromEs(String blogTitle);
+
+
+     List<BlogInfo> queryBLogForSearch(String blogTitle);
 }

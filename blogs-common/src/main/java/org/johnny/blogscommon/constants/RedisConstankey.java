@@ -8,8 +8,13 @@ public class RedisConstankey {
 
     public static final String ARCHIVGE_BLOG_KEY = "archive_blog_key";
 
-
     public static final String BLOG_TYPE_REDIS_KEY = "blog_type_list";
 
     public static final String BLOG_TOP_TEN_REDIS_KEY = "blog_top_ten";
+
+
+    public static final String BLOG_INFO_PREFIX_KEY = "blogInfo_";
+
+
+
 }

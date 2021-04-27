@@ -1,8 +1,10 @@
 package org.johnny.blogscommon.service.impl;
 
 import org.elasticsearch.index.query.QueryBuilders;
+import org.johnny.blogscommon.entity.blog.BlogInfo;
 import org.johnny.blogscommon.entity.blog.BlogInfoEsEntity;
 import org.johnny.blogscommon.repository.blog.BlogInfoEsEntityRepository;
+import org.johnny.blogscommon.repository.blog.BlogInfoRepository;
 import org.johnny.blogscommon.service.BlogInfoEsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +35,9 @@ public class BlogInfoEsServiceImpl implements BlogInfoEsService {
     @Autowired(required = false)
     private ElasticsearchTemplate elasticsearchTemplate;
 
+    @Autowired
+    private BlogInfoRepository blogInfoRepository;
+
 
     @Override
     public BlogInfoEsEntity save(BlogInfoEsEntity blogInfoEsEntity) {
@@ -62,4 +67,13 @@ public class BlogInfoEsServiceImpl implements BlogInfoEsService {
         }
         return blogInfoEsEntitys;
     }
+
+    @Override
+    public List<BlogInfo> queryBLogForSearch(String blogTitle) {
+
+
+        return null;
+    }
+
+
 }

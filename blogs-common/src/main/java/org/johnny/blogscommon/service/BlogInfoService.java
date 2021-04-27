@@ -32,9 +32,9 @@ public interface BlogInfoService {
 
     void addClick(Long id);
 
-    void addThumbClick(Long id);
+    void addThumbClick(Long id,Long userId);
 
-    void clearThumbClick(Long id);
+    void clearThumbClick(Long id,Long userId);
 
     void refreshEsAll();
 
@@ -43,4 +43,6 @@ public interface BlogInfoService {
     List<BlogInfoVo> queryTopTenBlogInfos(String order);
 
     List<ArchiveBlogVo> queryArchiveBlog();
+
+    List<BlogInfoVo> queryBLogForSearch(String blogTitle);
 }

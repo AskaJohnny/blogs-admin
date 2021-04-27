@@ -88,6 +88,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logoutSuccessHandler(logOutSuccessHandler)
                 .and()
                 .authorizeRequests()
+                .antMatchers("/test/some2").permitAll()
                 .anyRequest().authenticated()
                 .accessDecisionManager(customizeAccessDecisionManager())
                 .withObjectPostProcessor(new ObjectPostProcessor<FilterSecurityInterceptor>() {

@@ -22,7 +22,7 @@ import java.util.Map;
 public class LoginController {
 
 
-    @PostMapping("/login")
+    @PostMapping("/d")
     public ResultVo login(@RequestBody LoginReqVo loginReqVo) {
         log.info("【loginReqVo： {}】", loginReqVo);
 

@@ -3,6 +3,7 @@ package org.johnny.blogscommon.service.impl;
 import com.google.gson.Gson;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -12,9 +13,11 @@ import org.johnny.blogscommon.entity.blog.BlogInfo;
 import org.johnny.blogscommon.entity.blog.BlogInfoEsEntity;
 import org.johnny.blogscommon.entity.blog.QBlogInfo;
 import org.johnny.blogscommon.entity.blog.QBlogType;
+import org.johnny.blogscommon.entity.thumb.UserThumbRelation;
 import org.johnny.blogscommon.form.BlogInfoForm;
 import org.johnny.blogscommon.repository.blog.BlogInfoEsEntityRepository;
 import org.johnny.blogscommon.repository.blog.BlogInfoRepository;
+import org.johnny.blogscommon.repository.thumb.UserThumbRelationRepository;
 import org.johnny.blogscommon.service.BlogInfoService;
 import org.johnny.blogscommon.service.BlogTypeService;
 import org.johnny.blogscommon.utils.DateUtils;
@@ -77,6 +80,9 @@ public class BlogInfoServiceImpl implements BlogInfoService {
     @Autowired
     private BlogTypeService blogTypeService;
 
+    @Autowired
+    private UserThumbRelationRepository userThumbRelationRepository;
+
     @Override
     public Page<BlogInfoVo> findPageForPhone(Pageable pageable, BlogInfoForm blogInfoForm) {
         QBlogInfo qBlogInfo = QBlogInfo.blogInfo;
@@ -132,7 +138,7 @@ public class BlogInfoServiceImpl implements BlogInfoService {
                 jpaQuery.orderBy(qBlogInfo.thumbCount.desc());
             }
 
-            jpaQuery.fetch().stream().forEach(tuple -> {
+            jpaQuery.fetch().forEach(tuple -> {
                 BlogInfo blogInfo = new BlogInfo();
                 blogInfo.setId(tuple.get(0, Long.class));
                 blogInfo.setBlogTitle(tuple.get(1, String.class));
@@ -208,6 +214,33 @@ public class BlogInfoServiceImpl implements BlogInfoService {
         }
         return archiveBlogVos;
     }
+
+    @Override
+    public List<BlogInfoVo> queryBLogForSearch(String blogTitle) {
+
+        QBlogInfo qBlogInfo = QBlogInfo.blogInfo;
+
+        List<Tuple> fetch = queryFactory.select(qBlogInfo.id, qBlogInfo.blogTitle)
+                .from(qBlogInfo)
+                .where(qBlogInfo.blogTitle.like("%" + blogTitle + "%"))
+                .fetch();
+        List<BlogInfoVo> blogInfoVos = new ArrayList<>();
+        if (fetch != null) {
+            fetch.stream().forEach(tuple -> {
+                Long id = tuple.get(0, Long.class);
+                String name = tuple.get(1, String.class);
+
+                BlogInfoVo blogInfoVo = new BlogInfoVo();
+                blogInfoVo.setId(id);
+                blogInfoVo.setBlogTitle(name);
+                blogInfoVos.add(blogInfoVo);
+            });
+
+        }
+
+        return blogInfoVos;
+    }
+
 
     /**
      * 查询 blogInfo 信息  带分页
@@ -310,29 +343,45 @@ public class BlogInfoServiceImpl implements BlogInfoService {
      */
     @Override
     public BlogInfoVo queryById(Long id) {
-        QBlogInfo qBlogInfo = QBlogInfo.blogInfo;
-
-        QBlogType qBlogType = QBlogType.blogType;
-        Tuple tuple = queryFactory.select(qBlogInfo, qBlogType.typeName, qBlogType.blogTypeAnchor)
-                .from(qBlogInfo)
-                .leftJoin(qBlogType)
-                .on(qBlogInfo.blogTypeId.eq(qBlogType.id))
-                .where(qBlogInfo.id.eq(id))
-                .fetchOne();
-
-        BlogInfo blogInfo = tuple.get(0, BlogInfo.class);
+        BlogInfoVo blogInfoVo = null;
+        //1.从Redis中查询
+        String blogInfoJsonStr = stringRedisTemplate.opsForValue().get(RedisConstankey.BLOG_INFO_PREFIX_KEY + id);
         Gson gson = new Gson();
-        List<Anchor> list = gson.fromJson(blogInfo.getAnchorJson(), List.class);
-        BlogInfoVo blogInfoVo = BlogInfoConverter.INSTANCE.domain2vo(tuple.get(0, BlogInfo.class))
-                .setBlogTypeName(tuple.get(1, String.class))
-                .setBlogTypeAnchor(tuple.get(2, String.class));
-        blogInfoVo.setAnchors(list);
+        BlogInfo redisBlogInfo = gson.fromJson(blogInfoJsonStr, BlogInfo.class);
+        if (redisBlogInfo != null) {
+            log.info("【get redisBlogInfo： {}】", redisBlogInfo.getBlogTitle());
+            List<Anchor> list = gson.fromJson(redisBlogInfo.getAnchorJson(), List.class);
+            blogInfoVo = BlogInfoConverter.INSTANCE.domain2vo(redisBlogInfo);
+            blogInfoVo.setAnchors(list);
+        } else {
+            QBlogInfo qBlogInfo = QBlogInfo.blogInfo;
+            QBlogType qBlogType = QBlogType.blogType;
+            Tuple tuple = queryFactory.select(qBlogInfo, qBlogType.typeName, qBlogType.blogTypeAnchor)
+                    .from(qBlogInfo)
+                    .leftJoin(qBlogType)
+                    .on(qBlogInfo.blogTypeId.eq(qBlogType.id))
+                    .where(qBlogInfo.id.eq(id))
+                    .fetchOne();
+            BlogInfo blogInfo = tuple.get(0, BlogInfo.class);
 
+            if (blogInfo != null) {
+                log.info("【set redisBlogInfo： {}】", redisBlogInfo);
+                blogInfo.setBlogTypeName(tuple.get(1, String.class));
+                blogInfo.setBlogTypeAnchor(tuple.get(2, String.class));
+                stringRedisTemplate.opsForValue().set(RedisConstankey.BLOG_INFO_PREFIX_KEY + blogInfo.getId(), gson.toJson(blogInfo));
+            }
+            List<Anchor> list = gson.fromJson(blogInfo.getAnchorJson(), List.class);
+            blogInfoVo = BlogInfoConverter.INSTANCE.domain2vo(tuple.get(0, BlogInfo.class))
+                    .setBlogTypeName(tuple.get(1, String.class))
+                    .setBlogTypeAnchor(tuple.get(2, String.class));
+            blogInfoVo.setAnchors(list);
+        }
         //查询 上一条  下一条信息
         fillPreviousNextBlogInfo(id, blogInfoVo);
 
         return blogInfoVo;
     }
+
 
     private void fillPreviousNextBlogInfo(Long id, BlogInfoVo blogInfoVo) {
         QBlogInfo qBlogInfo = QBlogInfo.blogInfo;
@@ -465,20 +514,39 @@ public class BlogInfoServiceImpl implements BlogInfoService {
      * @param id
      */
     @Override
-    public void addThumbClick(Long id) {
+    public void addThumbClick(Long id, Long userId) {
         BlogInfo blogInfo = blogInfoRepository.findById(id).get();
         synchronized (this) {
             blogInfo.setThumbCount(blogInfo.getThumbCount() + 1);
             blogInfoRepository.save(blogInfo);
         }
+        //存入 缓存
+        stringRedisTemplate.opsForValue().set(RedisConstankey.BLOG_INFO_PREFIX_KEY + id, GsonUtils.toJsonStr(blogInfo));
+
+        //保存 用户和 点赞得博客 关系
+        UserThumbRelation exist = userThumbRelationRepository.findByUserIdAndBlogInfoId(userId, id);
+        if (exist == null) {
+            UserThumbRelation userThumbRelation = new UserThumbRelation();
+            userThumbRelation.setUserId(userId);
+            userThumbRelation.setBlogInfoId(id);
+            userThumbRelationRepository.save(userThumbRelation);
+        }
     }
 
     @Override
-    public void clearThumbClick(Long id) {
+    public void clearThumbClick(Long id, Long userId) {
         BlogInfo blogInfo = blogInfoRepository.findById(id).get();
         synchronized (this) {
             blogInfo.setThumbCount(blogInfo.getThumbCount() - 1);
             blogInfoRepository.save(blogInfo);
+        }
+        //存入 缓存
+        stringRedisTemplate.opsForValue().set(RedisConstankey.BLOG_INFO_PREFIX_KEY + id, GsonUtils.toJsonStr(blogInfo));
+
+        //删除 用户和 点赞得博客 关系
+        UserThumbRelation userThumbRelation = userThumbRelationRepository.findByUserIdAndBlogInfoId(userId, id);
+        if (userThumbRelation != null) {
+            userThumbRelationRepository.deleteById(userThumbRelation.getId());
         }
     }
 
